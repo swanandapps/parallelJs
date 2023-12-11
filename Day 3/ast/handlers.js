@@ -1,37 +1,24 @@
-import { findTokenDataType, findTokenValue } from "./tokens-find.js";
 import { isAllDigits } from "./utility.js";
-function parseVariableDeclaration(tokens, index, kind) {
-  //[let,x,=,10]
-  //we are at 0th index
-  //let + 1 = variable name
-  //let + 2 = assignement
-  //let + 3 = value
-  //Js goes though code in 2 phases
-  //in first it only declared nodes
-  //Memory Phase 1:
-  //   {
-  //     let x = undefined;
-  //     var arr = undefined;
-  //   }
-  //Memory Phase 2:
-  //   {
-  //     let x = 10;
-  //     var arr = [1,2,3,4];
-  //   }
+import { findTokenDataType, findTokenValue } from "./tokens-find.js";
 
-  //create two nodes: declaration node, assignment node
-
+// Helper function to consume tokens and return a metadata object for variable declarations
+function ParseVariableStatement(tokens, index, kind) {
+  // // Node for variable declaration
   const declarationNode = {
     nodeType: "VariableDeclaration",
     metaData: {
       name: tokens[index + 1],
+      // scope: scope, // assuming all variables are global for this example
+      // value: kind === "var" ? undefined : ReferenceError(kind),
       value: undefined,
       kind: kind,
+
       dataType: findTokenDataType(tokens, index),
     },
   };
 
-  const assignementNode = {
+  // Node for variable assignment
+  const assignmentNode = {
     nodeType: "VariableAssignment",
     metaData: {
       name: tokens[index + 1],
@@ -41,15 +28,15 @@ function parseVariableDeclaration(tokens, index, kind) {
     },
   };
 
-  return { declarationNode, assignementNode, newindex: index + 4 };
+  return {
+    declarationNode,
+    assignmentNode,
+    newIndex: index + 4,
+  };
 }
 
-//1. print(arr)
-//2. ['print','(', 'arr',')',]
-//3. 'print','(',  "'", 'Hello', 'from','ParallelJs', "'",')'
-
 // Helper function to consume tokens and return a metadata object for print statements
-function parsePrintStatement(index, tokens) {
+function handlePrintStatement(index, tokens) {
   const node = {
     nodeType: "PrintStatement",
     metaData: {
@@ -73,4 +60,8 @@ function parsePrintStatement(index, tokens) {
   return { node, newIndex: index + 1 }; // +1 to move past the closing ')'
 }
 
-export { parseVariableDeclaration, parsePrintStatement };
+function ReferenceError(kind) {
+  return `ReferenceError: Cannot access '${kind}' before initialization`;
+}
+
+export { handlePrintStatement, ParseVariableStatement };

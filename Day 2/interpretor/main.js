@@ -1,121 +1,36 @@
-import { createAST } from "../ast/main.js";
-import { parse } from "../parser/main.js";
-import { tokenize } from "../lexer/tokenizer.js";
-import { codeCleaner } from "../lexer/cleaners.js";
-
-import { Memory } from "../core/memory.js";
-
-import { stringSanitizeforFinalOutput } from "./helpers.js";
-
 import fs from "fs";
 import chalk from "chalk";
+import { tokenize } from "../lexer/tokenizer.js";
+import { codeCleaner } from "../lexer/cleaners.js";
+import { Parse } from "../parser/main.js";
 
-function interpretMiniJs(code) {
-  try {
-    const miniJs = {};
-    // STEP 1: Clean the Sourcecode written by Developer
-    miniJs.cleaned_code = codeCleaner(code);
-    // console.log(chalk.blue("   Cleaned Code:"), miniJs.cleaned_code);
+function InterpretJs(sourcecode) {
+  //Step 1: Read Sourcecode using node fs module
 
-    // STEP 2: Convert the Sourcecode into Array of Tokens
-    miniJs.tokens = tokenize(miniJs.cleaned_code);
-    console.log(chalk.blue("Tokens:"), miniJs.tokens);
+  //Step 2: Cleaning the Sourcecode
+  let result = codeCleaner(sourcecode);
+  console.log("result:", result);
+  //Step 3: Tokenise source code
 
-    // STEP 3: Give meaning to each Token in AST
-    const ast = createAST(miniJs.tokens);
-    console.log("ast:", ast);
-    miniJs.ast = ast;
+  //ideal tokens array = [let, x, =,10, const, y , = ,20]
+  let tokens = tokenize(sourcecode);
+  console.log(tokens);
 
-    miniJs.output = [];
+  //Step 4: Parser(tokens) -> AST
 
-    //from Memory.js
-    miniJs.memory = Memory;
-    console.log("Memory:", Memory);
-
-    for (let i = 0; i < ast.length; i++) {
-      const currentNode = ast[i];
-      const currentNodeType = currentNode.nodeType;
-      const currentNodeMetaData = currentNode.metaData;
-
-      let result;
-
-      switch (currentNodeType) {
-        //VariableDeclaration can be skipped.
-
-        case "VariableDeclaration":
-          break;
-
-        //2nd Phase of Memory, Declared variables are assigned Values
-
-        case "VariableAssignment":
-          result = currentNodeMetaData.value;
-
-          Memory.AssignValue(currentNodeMetaData, result, "Global");
-
-          break;
-        case "PrintStatement":
-          switch (currentNodeMetaData.to_print) {
-            case "variable":
-              // console.log(chalk.yellow.bold("      Printing Variable:"));
-              // console.log(chalk.yellow("         currentNode:"), currentNode);
-              //access the latest value from 2nd phase of memory
-              result = Memory.read(currentNodeMetaData.toPrint[0]);
-              miniJs.output.push(result.value);
-              break;
-            case "literal":
-              // console.log(chalk.yellow.bold("      Printing Literal:"));
-              // console.log(chalk.yellow("         currentNode:"), currentNode);
-              let literalstring = currentNodeMetaData.toPrint.join(" ");
-              result = stringSanitizeforFinalOutput(literalstring);
-              miniJs.output.push(result);
-              break;
-            default:
-              console.log(chalk.red("      Unknown to_print type"));
-          }
-          break;
-        default:
-          console.log(chalk.red("   Unknown currentNode Type"));
-          console.log(chalk.yellow("         currentNode:"), currentNode);
-      }
-    }
-
-    console.log(chalk.blue("Stack Memory:"));
-
-    let x = miniJs.memory.stack.map((item) => ({
-      Name: item.name,
-      Value: item.value || item.address, // replace property1 with the actual property name
-      // replace property1 with the actual property name
-    }));
-
-    console.table(x);
-
-    console.log(chalk.blue("Heap Memory:"));
-
-    let y = Array.from(miniJs.memory.heap.entries()).map(([key, value]) => ({
-      Address: key,
-      Value: value.value,
-    }));
-
-    console.table(y);
-
-    return miniJs;
-  } catch (error) {
-    console.log("error:", error);
-  }
+  let AST = Parse(tokens);
 }
 
 function runFile(filePath) {
-  fs.readFile(filePath, "utf8", (err, data) => {
+  fs.readFile(filePath, "utf8", (err, sourcecode) => {
     if (err) {
       console.error(`Error reading file: ${filePath}`);
       console.error(err);
       return;
     }
 
-    let { output } = interpretMiniJs(data);
-    output.forEach((element) => {
-      console.log(element);
-    });
+    //passing the sourcecode
+    let result = InterpretJs(sourcecode);
   });
 }
 

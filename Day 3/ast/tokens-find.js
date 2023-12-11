@@ -5,7 +5,7 @@ import {
   isStringToken,
 } from "./tokens-is.js";
 
-function findTokenDataType(tokens, index) {
+function findTokenDataType(tokens, index, memory) {
   //Dual token approach
   let token = tokens[index + 3];
   let nextToken = tokens[index + 4];
@@ -76,10 +76,6 @@ function handleMethodTokens(tokens, index) {
 
   return joinedValue;
 }
-
-("pablo pandey is a real person");
-//[",pablo,pandey,is, a, real, person,"]
-
 function extractStringValue(tokens, index) {
   const startQuote = tokens[index + 3];
   if (startQuote === "'" || startQuote === '"') {
@@ -90,8 +86,6 @@ function extractStringValue(tokens, index) {
   }
   return tokens[index + 3];
 }
-
-//['[',1,2,3,4,']']
 
 function extractArrayValue(tokens, index) {
   const endBracket = tokens.findIndex((token, i) => i > index && token === "]");

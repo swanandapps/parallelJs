@@ -1,8 +1,8 @@
-// function removeQuotesFromString(str) {
-//   // Regular expression to remove single or double quotes from the start and end of a string
-//   const quoteRegex = /^['"]+|['"]+$/g;
-//   return str.replace(quoteRegex, "");
-// }
+function removeQuotesFromString(str) {
+  // Regular expression to remove single or double quotes from the start and end of a string
+  const quoteRegex = /^['"]+|['"]+$/g;
+  return str.replace(quoteRegex, "");
+}
 
 function removeExtraWhitespaces(code) {
   // Replace instances of two or more whitespaces with a single space
@@ -22,4 +22,4 @@ function codeCleaner(code) {
   return codeclean2;
 }
 
-export { codeCleaner };
+export { codeCleaner, removeQuotesFromString };

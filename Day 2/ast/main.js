@@ -1,55 +1,63 @@
-import { handlePrintStatement, ParseVariableStatement } from "./handlers.js";
-import { Memory } from "../core/memory.js";
-function createAST(tokens) {
-  // Initialize an array to hold our AST nodes
-  const ast = [];
+import { parseVariableDeclaration, parsePrintStatement } from "./handlers.js";
 
-  //get a token
-  // switch cases: run typecheck, isVariable()
-  //parse token and generate node
-  //push node to ast
-  //push some nodes to memory
+function createAst(tokens) {
+  //Step 1: init AST
+  let ast = []; //array of nodes
 
-  // Loop over the tokens and create AST nodes based on token patterns
+  //Step 2:iterate through tokens
+
   for (let i = 0; i < tokens.length; i++) {
     let token = tokens[i];
 
+    //Step 3: Identifying the token
+
+    //there are two type of tokens so far
+    //a. Variables decl, assignement
+    //b. Print keyword
+
     switch (token) {
-      //show em a better way of doing this typecheck.js-
-      case "var":
+      //figuring out variables in our tokens
       case "let":
       case "const":
-        // console.log("var declaration found");
-        //we are geeting two nodes here
-        const {
-          declarationNode: nodeDeclaration,
-          assignmentNode: nodeAssignment,
-          newIndex: newIndexLet,
-        } = ParseVariableStatement(tokens, i, token);
-        ast.push(nodeAssignment);
-        ast.unshift(nodeDeclaration);
-        //1st phase of memory
-        //Hoisting implementation
+      case "var":
+        //handle Variables here
 
-        Memory.write({ ...nodeDeclaration.metaData });
+        console.log("Variable found", token);
 
-        i = newIndexLet - 1; // -1 because the loop will increment i
+        let { declarationNode, assignementNode, newindex } =
+          parseVariableDeclaration(tokens, i, token);
+
+        ast.push(assignementNode);
+        ast.unshift(declarationNode);
+
+        //store this variables in memory
+        //1st phase: Memory will have only declarations
+        //2nd phase: Memory will have assignments
+
+        //we need to implement memory
+
+        //stack memory and heap memory
+
+        i = newindex;
         break;
 
       case "print":
         const { node: nodePrint, newIndex: newIndexPrint } =
-          handlePrintStatement(i, tokens);
+          parsePrintStatement(i, tokens);
         ast.push(nodePrint);
+        console.log("nodePrint:", nodePrint);
         i = newIndexPrint - 1;
+
         break;
 
       default:
-        // Code for handling unknown tokens
+        //handle unknown tokens
+
         break;
     }
   }
 
-  return ast;
+  console.log(ast);
 }
 
-export { createAST };
+export { createAst };
