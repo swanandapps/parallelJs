@@ -21,19 +21,19 @@ function createAST(tokens) {
       case "const":
         // console.log("var declaration found");
         //we are geeting two nodes here
-        const {
-          declarationNode: nodeDeclaration,
-          assignmentNode: nodeAssignment,
-          newIndex: newIndexLet,
-        } = ParseVariableStatement(tokens, i, token);
-        ast.push(nodeAssignment);
-        ast.unshift(nodeDeclaration);
+        const { variableNode, newIndex } = ParseVariableStatement(
+          tokens,
+          i,
+          token
+        );
+        ast.push(variableNode);
+        // ast.unshift(variableNode);
         //1st phase of memory
         //Hoisting implementation
 
-        Memory.write({ ...nodeDeclaration.metaData });
+        Memory.write(variableNode.metaData, undefined);
 
-        i = newIndexLet - 1; // -1 because the loop will increment i
+        i = newIndex - 1; // -1 because the loop will increment i
         break;
 
       case "print":

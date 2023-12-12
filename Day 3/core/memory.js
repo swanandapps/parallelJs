@@ -39,10 +39,13 @@ class MemoryImp {
     // Find the node name in the stack
 
     // Try to find the memory node in the stack
-    const memoryNode = this.stack.find((item) => item.name === node.name);
+    let memoryNode = this.stack.find((item) => item.name === node.name);
     // If the memory node doesn't exist, add it
     if (!memoryNode) {
-      this.stack.push(node);
+      //shallow copy
+      memoryNode = { ...node };
+      memoryNode.value = undefined;
+      this.stack.push(memoryNode);
       return false;
     }
 
@@ -54,8 +57,9 @@ class MemoryImp {
       // If non-primitive:
       // Generate a new memory address
       let address = generateMemoryAddress();
-      // Set the node value to the new value
-      memoryNode.value = newval;
+      console.log("address:", address, node);
+      // Set the memory node value to the new value
+      memoryNode.value = address;
       // Update the node with the new value
       node.value = newval;
       // Log the new value for debugging purposes
@@ -63,7 +67,6 @@ class MemoryImp {
       // Store the node in the heap with the new address
       this.heap.set(address, node);
       // Update the memory node with the address reference
-      memoryNode.address = address;
     }
     // Update the memory node with the current scope
     memoryNode.scope = scope;

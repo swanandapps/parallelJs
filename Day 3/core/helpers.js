@@ -9,7 +9,7 @@ function isUninitialized(node) {
 
 // Helper method to get value from heap
 function getHeapValue(node, heap) {
-  const heapNode = heap.get(node.address);
+  const heapNode = heap.get(node.value);
   console.log("heapNode:", heapNode);
   return heapNode ? heapNode.value : "no value found in heap";
 }

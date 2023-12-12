@@ -4,33 +4,33 @@ import { findTokenDataType, findTokenValue } from "./tokens-find.js";
 // Helper function to consume tokens and return a metadata object for variable declarations
 function ParseVariableStatement(tokens, index, kind) {
   // // Node for variable declaration
-  const declarationNode = {
-    nodeType: "VariableDeclaration",
-    metaData: {
-      name: tokens[index + 1],
-      // scope: scope, // assuming all variables are global for this example
-      // value: kind === "var" ? undefined : ReferenceError(kind),
-      value: undefined,
-      kind: kind,
+  // const declarationNode = {
+  //   nodeType: "VariableDeclaration",
+  //   metaData: {
+  //     name: tokens[index + 1],
+  //     // scope: scope, // assuming all variables are global for this example
+  //     // value: kind === "var" ? undefined : ReferenceError(kind),
+  //     value: undefined,
+  //     kind: kind,
 
-      dataType: findTokenDataType(tokens, index),
-    },
-  };
+  //     dataType: findTokenDataType(tokens, index),
+  //   },
+  // };
 
   // Node for variable assignment
-  const assignmentNode = {
-    nodeType: "VariableAssignment",
+  const variableNode = {
+    nodeType: "VariableDeclaration",
     metaData: {
       name: tokens[index + 1],
       dataType: findTokenDataType(tokens, index),
 
       value: findTokenValue(tokens, index),
+      kind: kind,
     },
   };
 
   return {
-    declarationNode,
-    assignmentNode,
+    variableNode,
     newIndex: index + 4,
   };
 }

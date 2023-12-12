@@ -23,8 +23,8 @@ function interpretMiniJs(code) {
 
     // STEP 3: Give meaning to each Token in AST
     const ast = createAST(miniJs.tokens);
-    console.log("ast:", ast);
     miniJs.ast = ast;
+    console.log("ast:", ast);
 
     miniJs.output = [];
 
@@ -40,14 +40,9 @@ function interpretMiniJs(code) {
       let result;
 
       switch (currentNodeType) {
-        //VariableDeclaration can be skipped.
-
-        case "VariableDeclaration":
-          break;
-
         //2nd Phase of Memory, Declared variables are assigned Values
 
-        case "VariableAssignment":
+        case "VariableDeclaration":
           result = currentNodeMetaData.value;
 
           Memory.write(currentNodeMetaData, result, "Global");
