@@ -19,6 +19,7 @@ function InterpretJs(sourcecode) {
   //Step 4: Parser(tokens) -> AST
 
   let AST = Parse(tokens);
+  console.log("AST:", AST);
 }
 
 function runFile(filePath) {
