@@ -5,7 +5,10 @@ import { codeCleaner } from "../lexer/cleaners.js";
 
 import { Memory } from "../core/memory.js";
 
-import { stringSanitizeforFinalOutput } from "./helpers.js";
+import {
+  CreateWrapperObjectandSolveMethodValue,
+  stringSanitizeforFinalOutput,
+} from "./helpers.js";
 
 import fs from "fs";
 import chalk from "chalk";
@@ -43,7 +46,13 @@ function interpretMiniJs(code) {
         //2nd Phase of Memory, Declared variables are assigned Values
 
         case "VariableDeclaration":
-          result = currentNodeMetaData.value;
+          if (currentNodeMetaData.dataType == "method") {
+            result = CreateWrapperObjectandSolveMethodValue(
+              currentNode.metaData
+            );
+          } else {
+            result = currentNodeMetaData.value;
+          }
 
           Memory.write(currentNodeMetaData, result, "Global");
 
