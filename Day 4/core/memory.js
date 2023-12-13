@@ -21,11 +21,13 @@ class MemoryImp {
 
     //3 cases of memorynode
     // If no node is found, return 'no value found'
-    if (!memoryNode) return "no value found";
+    if (!memoryNode) return { value: `no value found` };
 
     // If the node is uninitialized, return a reference error
     if (isUninitialized(memoryNode)) {
-      return `Reference Error: Cannot Access '${memoryNode.kind}' before Initialization`;
+      return {
+        value: `Reference Error: Cannot Access '${memoryNode.kind}' before Initialization`,
+      };
     }
 
     // Return the node value directly if it's primitive, otherwise get the value from the heap
