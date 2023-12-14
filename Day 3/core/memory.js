@@ -2,7 +2,6 @@
 import {
   isUninitialized,
   getHeapValue,
-  isPrimitive,
   generateMemoryAddress,
 } from "./helpers.js";
 
@@ -19,19 +18,21 @@ class MemoryImp {
     // Find a memory node in the stack with the given name
     const memoryNode = this.stack.find((item) => item.name === nodeName);
 
-    //3 cases of memorynode
-    // If no node is found, return 'no value found'
-    if (!memoryNode) return "no value found";
+    //2 cases of memorynode
 
-    // If the node is uninitialized, return a reference error
-    if (isUninitialized(memoryNode)) {
-      return `Reference Error: Cannot Access '${memoryNode.kind}' before Initialization`;
+    // If
+    if (memoryNode.value === undefined) {
+      let error = {};
+      error.value =
+        memoryNode.kind === "var"
+          ? "undefined"
+          : `Reference Error: Cannot Access '${memoryNode.kind}' before Initialization`;
+
+      return error;
     }
 
     // Return the node value directly if it's primitive, otherwise get the value from the heap
-    return isPrimitive(memoryNode.dataType)
-      ? memoryNode
-      : getHeapValue(memoryNode, this.heap);
+    return getHeapValue(memoryNode, this.heap);
   }
 
   // Step 4: Define AssignValue method to assign new values to a node
@@ -48,26 +49,19 @@ class MemoryImp {
       this.stack.push(memoryNode);
       return false;
     }
-
-    // Check if the node data type is primitive
-    if (isPrimitive(node.dataType)) {
-      // If primitive, assign the new value directly
-      memoryNode.value = newval;
-    } else {
-      // If non-primitive:
-      // Generate a new memory address
-      let address = generateMemoryAddress();
-      console.log("address:", address, node);
-      // Set the memory node value to the new value
-      memoryNode.value = address;
-      // Update the node with the new value
-      node.value = newval;
-      // Log the new value for debugging purposes
-      console.log("newval:", newval);
-      // Store the node in the heap with the new address
-      this.heap.set(address, node);
-      // Update the memory node with the address reference
-    }
+    // If non-primitive:
+    // Generate a new memory address
+    let address = generateMemoryAddress();
+    console.log("address:", address, node);
+    // Set the memory node value to the new value
+    memoryNode.value = address;
+    // Update the node with the new value
+    node.value = newval;
+    // Log the new value for debugging purposes
+    console.log("newval:", newval);
+    // Store the node in the heap with the new address
+    this.heap.set(address, node);
+    // Update the memory node with the address reference
     // Update the memory node with the current scope
     memoryNode.scope = scope;
   }

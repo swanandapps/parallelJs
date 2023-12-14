@@ -10,15 +10,10 @@ function isUninitialized(node) {
 // Helper method to get value from heap
 function getHeapValue(node, heap) {
   const heapNode = heap.get(node.value);
-  console.log("heapNode:", heapNode);
-  return heapNode ? heapNode : "no value found in heap";
+
+  return heapNode;
 }
-// Determines if a data type is a primitive
-function isPrimitive(dataType) {
-  return ["number", "string", "boolean", "undefined", "symbol"].includes(
-    dataType
-  );
-}
+
 function generateMemoryAddress() {
   // Generate a random number between 0x1000 (4096) and 0xFFFF (65535)
   let address = Math.floor(Math.random() * (0xffff - 0x1000 + 1)) + 0x1000;
@@ -26,4 +21,4 @@ function generateMemoryAddress() {
   return "0x" + address.toString(16).toUpperCase();
 }
 
-export { isUninitialized, getHeapValue, isPrimitive, generateMemoryAddress };
+export { isUninitialized, getHeapValue, generateMemoryAddress };

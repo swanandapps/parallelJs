@@ -55,6 +55,7 @@ function interpretMiniJs(code) {
               // console.log(chalk.yellow("         currentNode:"), currentNode);
               //access the latest value from 2nd phase of memory
               result = Memory.read(currentNodeMetaData.toPrint[0]);
+
               miniJs.output.push(result.value);
               break;
             case "literal":
