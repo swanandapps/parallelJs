@@ -1,9 +1,5 @@
 // Import necessary helper functions from helpers.js file
-import {
-  isUninitialized,
-  getHeapValue,
-  generateMemoryAddress,
-} from "./helpers.js";
+import { getHeapValue, generateMemoryAddress } from "./helpers.js";
 
 // Step 1: Define the MemoryImp class
 class MemoryImp {
@@ -40,19 +36,30 @@ class MemoryImp {
     // Find the node name in the stack
 
     // Try to find the memory node in the stack
+
+    // two operations
+    //1. Create
+    //2. Update
     let memoryNode = this.stack.find((item) => item.name === node.name);
     // If the memory node doesn't exist, add it
     if (!memoryNode) {
-      //shallow copy
-      memoryNode = { ...node };
-      memoryNode.value = undefined;
-      this.stack.push(memoryNode);
-      return false;
+      this._createMemoryNode(node);
+    } else {
+      this._updateMemoryNode(memoryNode, node, newval);
     }
+  }
+
+  _createMemoryNode(node) {
+    //shallow copy
+    let memoryNode = { ...node };
+    memoryNode.value = undefined;
+    this.stack.push(memoryNode);
+  }
+
+  _updateMemoryNode(memoryNode, node, newval) {
     // If non-primitive:
     // Generate a new memory address
     let address = generateMemoryAddress();
-    console.log("address:", address, node);
     // Set the memory node value to the new value
     memoryNode.value = address;
     // Update the node with the new value
@@ -63,7 +70,7 @@ class MemoryImp {
     this.heap.set(address, node);
     // Update the memory node with the address reference
     // Update the memory node with the current scope
-    memoryNode.scope = scope;
+    // memoryNode.scope = scope;
   }
 
   // Other methods can be added here as needed...

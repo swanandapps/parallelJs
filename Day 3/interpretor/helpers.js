@@ -6,4 +6,5 @@ function stringSanitizeforFinalOutput(str) {
 
   return result;
 }
+
 export { stringSanitizeforFinalOutput };

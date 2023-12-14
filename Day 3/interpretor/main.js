@@ -1,14 +1,15 @@
+import fs from "fs";
+import chalk from "chalk";
+
 import { createAST } from "../ast/main.js";
 import { parse } from "../parser/main.js";
 import { tokenize } from "../lexer/tokenizer.js";
 import { codeCleaner } from "../lexer/cleaners.js";
 
 import { Memory } from "../core/memory.js";
+import { logMemory } from "../core/helpers.js";
 
 import { stringSanitizeforFinalOutput } from "./helpers.js";
-
-import fs from "fs";
-import chalk from "chalk";
 
 function interpretMiniJs(code) {
   try {
@@ -19,18 +20,17 @@ function interpretMiniJs(code) {
 
     // STEP 2: Convert the Sourcecode into Array of Tokens
     miniJs.tokens = tokenize(miniJs.cleaned_code);
-    console.log(chalk.blue("Tokens:"), miniJs.tokens);
 
     // STEP 3: Give meaning to each Token in AST
     const ast = createAST(miniJs.tokens);
     miniJs.ast = ast;
-    console.log("ast:", ast);
 
     miniJs.output = [];
 
     //from Memory.js
     miniJs.memory = Memory;
-    console.log("Memory:", Memory);
+
+    logMemory();
 
     for (let i = 0; i < ast.length; i++) {
       const currentNode = ast[i];
@@ -75,25 +75,7 @@ function interpretMiniJs(code) {
       }
     }
 
-    console.log(chalk.blue("Stack Memory:"));
-
-    let x = miniJs.memory.stack.map((item) => ({
-      Name: item.name,
-      Value: item.value || item.address, // replace property1 with the actual property name
-      // replace property1 with the actual property name
-    }));
-
-    console.table(x);
-
-    console.log(chalk.blue("Heap Memory:"));
-
-    let y = Array.from(miniJs.memory.heap.entries()).map(([key, value]) => ({
-      Address: key,
-      Value: value.value,
-    }));
-
-    console.table(y);
-
+    logMemory();
     return miniJs;
   } catch (error) {
     console.log("error:", error);
