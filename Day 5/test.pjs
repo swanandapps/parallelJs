@@ -1,0 +1,30 @@
+
+
+
+print(num)
+
+let num = 12
+const arr = [1,2,3,4]
+let name = 'pablo pandey'
+let uname = name.toUpperCase()
+
+function showValues()
+
+{
+print(666)
+print(arr)
+print(name)
+print('Hello from ParallelJs ')
+
+}
+
+showValues()
+
+
+print(uname)
+
+
+         
+
+     
+
