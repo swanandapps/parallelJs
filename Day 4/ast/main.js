@@ -1,50 +1,112 @@
-import { handlePrintStatement, ParseVariableStatement } from "./handlers.js";
 import { Memory } from "../core/memory.js";
-function createAST(tokens) {
-  // Initialize an array to hold our AST nodes
-  const ast = [];
+import {
+  parseVariableDeclaration,
+  parsePrintStatement,
+  parseFunctionExpression,
+  parseFunctionCall,
+} from "./handlers.js";
 
-  //get a token
-  // switch cases: run typecheck, isVariable()
-  //parse token and generate node
-  //push node to ast
-  //push some nodes to memory
+function createAst(tokens) {
+  //Step 1: init AST
+  let ast = []; //array of nodes
 
-  // Loop over the tokens and create AST nodes based on token patterns
+  //Step 2:iterate through tokens
+
   for (let i = 0; i < tokens.length; i++) {
     let token = tokens[i];
 
+    //Step 3: Identifying the token
+
+    //there are two type of tokens so far
+    //a. Variables decl, assignement
+    //b. Print keyword
+
     switch (token) {
-      //show em a better way of doing this typecheck.js-
-      case "var":
+      //figuring out variables in our tokens
       case "let":
       case "const":
-        // console.log("var declaration found");
-        //we are geeting two nodes here
-        const { variableNode, newIndex } = ParseVariableStatement(
+      case "var":
+        //handle Variables here
+
+        let { variableNode, newindex } = parseVariableDeclaration(
           tokens,
           i,
           token
         );
+
         ast.push(variableNode);
-        // ast.unshift(variableNode);
-        //1st phase of memory
-        //Hoisting implementation
 
-        Memory.write(variableNode.metaData, undefined);
+        Memory.write(variableNode.metaData);
 
-        i = newIndex - 1; // -1 because the loop will increment i
+        //2nd phase: Memory will have assignments
+
+        i = newindex - 1;
         break;
 
       case "print":
         const { node: nodePrint, newIndex: newIndexPrint } =
-          handlePrintStatement(i, tokens);
+          parsePrintStatement(tokens, i);
         ast.push(nodePrint);
         i = newIndexPrint - 1;
+
+        break;
+
+      case "function":
+        const { node, newIndex: newindexFunction } = parseFunctionExpression(
+          tokens,
+          i
+        );
+
+        let functionBodyNode = createAst(node.metaData.body);
+
+        let functionNode = {
+          name: node.metaData.functionName,
+          value: functionBodyNode,
+          type: "function",
+        };
+        console.log("functionNode:", functionNode);
+
+        Memory.write(functionNode);
+
+        node.functionBodyNode = functionBodyNode;
+        ast.push(node);
+
+        i = newindexFunction - 1;
+
+        // case "if":
+        //   const { node: nodeIf, newIndex: newIndexIf } = parseIfStatement(
+        //     tokens,
+        //     i
+        //   );
+
+        //   ast.push(nodeIf);
+        //   console.log("nodeIf:", nodeIf);
+
+        //   i = newIndexIf;
+
+        //   console.log("tokens:", tokens);
+        //   break;
         break;
 
       default:
-        // Code for handling unknown tokens
+        //handle unknown tokens
+
+        // Check for a function call pattern: functionName followed by '()'
+        if (
+          i + 2 < tokens.length &&
+          tokens[i + 1] === "(" &&
+          tokens[i + 2] === ")"
+        ) {
+          const { node, newIndex: newindexFunctionCall } = parseFunctionCall(
+            tokens,
+            i
+          );
+
+          ast.push(node);
+
+          i = newindexFunctionCall - 1;
+        }
+
         break;
     }
   }
@@ -52,4 +114,4 @@ function createAST(tokens) {
   return ast;
 }
 
-export { createAST };
+export { createAst };

@@ -1,124 +1,117 @@
-import { createAST } from "../ast/main.js";
-import { parse } from "../parser/main.js";
+import fs from "fs";
+import chalk from "chalk";
 import { tokenize } from "../lexer/tokenizer.js";
 import { codeCleaner } from "../lexer/cleaners.js";
+import { Parse } from "../parser/main.js";
+import { logMemory } from "../core/helpers.js";
 
 import { Memory } from "../core/memory.js";
 
-import {
-  CreateWrapperObjectandSolveMethodValue,
-  stringSanitizeforFinalOutput,
-} from "./helpers.js";
+import { stringSanitizeforFinalOutput } from "../interpretor/helpers.js";
+function InterpretJs(sourcecode) {
+  //Step 1: Read Sourcecode using node fs module
 
-import fs from "fs";
-import chalk from "chalk";
+  //Step 2: Cleaning the Sourcecode
+  let result = codeCleaner(sourcecode);
+  //Step 3: Tokenise source code
 
-function interpretMiniJs(code) {
-  try {
-    const miniJs = {};
-    // STEP 1: Clean the Sourcecode written by Developer
-    miniJs.cleaned_code = codeCleaner(code);
-    // console.log(chalk.blue("   Cleaned Code:"), miniJs.cleaned_code);
+  //ideal tokens array = [let, x, =, 10, const, y , = ,20]
+  let tokens = tokenize(sourcecode);
+  console.log(tokens);
 
-    // STEP 2: Convert the Sourcecode into Array of Tokens
-    miniJs.tokens = tokenize(miniJs.cleaned_code);
-    console.log(chalk.blue("Tokens:"), miniJs.tokens);
+  //Step 4: Parser(tokens) -> AST
 
-    // STEP 3: Give meaning to each Token in AST
-    const ast = createAST(miniJs.tokens);
-    miniJs.ast = ast;
-    console.log("ast:", ast);
+  let AST = Parse(tokens);
+  console.log("AST:", AST);
 
-    miniJs.output = [];
+  let output = [];
+  logMemory();
 
-    //from Memory.js
-    miniJs.memory = Memory;
-    console.log("Memory:", Memory);
+  //loop over each ast node and interpret
 
-    for (let i = 0; i < ast.length; i++) {
-      const currentNode = ast[i];
-      const currentNodeType = currentNode.nodeType;
-      const currentNodeMetaData = currentNode.metaData;
+  function InterPretAST(AST) {
+    for (let i = 0; i < AST.length; i++) {
+      //Read AST Node Data
+      const currrentNode = AST[i];
+      const currrentNodeType = currrentNode.nodeType;
+      const currrentNodeMetaData = currrentNode.metaData;
 
       let result;
-
-      switch (currentNodeType) {
-        //2nd Phase of Memory, Declared variables are assigned Values
-
+      switch (currrentNodeType) {
         case "VariableDeclaration":
-          if (currentNodeMetaData.dataType == "method") {
-            result = CreateWrapperObjectandSolveMethodValue(
-              currentNode.metaData
-            );
-          } else {
-            result = currentNodeMetaData.value;
-          }
+          //interpret var dec here
 
-          Memory.write(currentNodeMetaData, result, "Global");
+          //currrentNodeMetaData = { name: 'num', dataType: 'number', value: '12', kind: 'var' }
+
+          /* Grab the node value found through
+           ParseVariableDeclaration() in our Parser */
+          result = currrentNodeMetaData.value;
+
+          Memory.write(currrentNodeMetaData, result);
 
           break;
+
         case "PrintStatement":
-          switch (currentNodeMetaData.to_print) {
+          //interpret print statements here
+
+          switch (currrentNodeMetaData.printType) {
             case "variable":
-              // console.log(chalk.yellow.bold("      Printing Variable:"));
-              // console.log(chalk.yellow("         currentNode:"), currentNode);
-              //access the latest value from 2nd phase of memory
-              result = Memory.read(currentNodeMetaData.toPrint[0]);
-              miniJs.output.push(result.value);
+              // Give the variable name, get back the value from Heap
+              result = Memory.read(currrentNodeMetaData.toPrint[0]); //arr, name, str
+
+              output.push(result.value);
+
               break;
+
             case "literal":
-              // console.log(chalk.yellow.bold("      Printing Literal:"));
-              // console.log(chalk.yellow("         currentNode:"), currentNode);
-              let literalstring = currentNodeMetaData.toPrint.join(" ");
+              let literalstring = currrentNodeMetaData.toPrint.join(" ");
+
               result = stringSanitizeforFinalOutput(literalstring);
-              miniJs.output.push(result);
+
+              output.push(result);
               break;
-            default:
-              console.log(chalk.red("      Unknown to_print type"));
           }
+
           break;
+
+        case "FunctionCall":
+          // const { lhs, operator, rhs } = AcurrrentNodeMetaData.condition;
+          console.log("function currrentNodeMetaData:", currrentNodeMetaData);
+
+          result = Memory.read(currrentNodeMetaData.functionName);
+
+          let x = InterPretAST(result.value);
+          console.log("x:", x);
+        // const expression = lhsValue + " " + operator + " " + rhs;
+
+        // result = eval(expression);
+
         default:
-          console.log(chalk.red("   Unknown currentNode Type"));
-          console.log(chalk.yellow("         currentNode:"), currentNode);
+          console.log("Unknown NodeType", currrentNode);
       }
     }
-
-    console.log(chalk.blue("Stack Memory:"));
-
-    let x = miniJs.memory.stack.map((item) => ({
-      Name: item.name,
-      Value: item.value || item.address, // replace property1 with the actual property name
-      // replace property1 with the actual property name
-    }));
-
-    console.table(x);
-
-    console.log(chalk.blue("Heap Memory:"));
-
-    let y = Array.from(miniJs.memory.heap.entries()).map(([key, value]) => ({
-      Address: key,
-      Value: value.value,
-    }));
-
-    console.table(y);
-
-    return miniJs;
-  } catch (error) {
-    console.log("error:", error);
   }
+
+  InterPretAST(AST);
+
+  logMemory();
+
+  return output;
 }
 
 function runFile(filePath) {
-  fs.readFile(filePath, "utf8", (err, data) => {
+  fs.readFile(filePath, "utf8", (err, sourcecode) => {
     if (err) {
       console.error(`Error reading file: ${filePath}`);
       console.error(err);
       return;
     }
 
-    let { output } = interpretMiniJs(data);
-    output.forEach((element) => {
-      console.log(element);
+    //passing the sourcecode
+    let output = InterpretJs(sourcecode);
+
+    output.forEach((singleoutput) => {
+      console.log(singleoutput);
     });
   });
 }

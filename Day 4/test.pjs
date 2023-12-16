@@ -1,24 +1,26 @@
 
-print(arr)
+
+         showValues()
+
+print(num)
 
 let num = 12
-let name = 'pablo pandey'
 const arr = [1,2,3,4]
+let name = 'pablo pandey'
 
-let uname = name.toUpperCase()
 
-print(uname)
+function showValues()
+
+{
 print(666)
 print(arr)
-
-
-if(num = 12){
-
-
+print(name)
 print('Hello from ParallelJs ')
 
-
 }
+
+
          
+         showValues()
 
      
